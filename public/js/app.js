@@ -416,6 +416,8 @@ var MessagesList = function (_Observer3) {
 
     _this3.container = document.createElement("ul");
     _this3.container.className = "list-group";
+    _this3.container.style["overflow-y"] = "scroll";
+    _this3.container.style["max-height"] = "480px";
 
     if (messages) {
       _this3.addMessages(messages);

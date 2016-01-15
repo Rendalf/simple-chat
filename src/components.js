@@ -151,6 +151,8 @@ const MessagesList = class extends Observer {
     // create container
     this.container = document.createElement("ul");
     this.container.className = "list-group";
+    this.container.style["overflow-y"] = "scroll";
+    this.container.style["max-height"] = "480px";
 
     if (messages) {
       this.addMessages(messages);
