@@ -32,7 +32,8 @@ var App = function (_Observer) {
     _this.components = {
       authForm: new Components.AuthForm(),
       messageForm: new Components.MessageForm(),
-      messagesList: new Components.MessagesList()
+      messagesList: new Components.MessagesList(),
+      usersList: new Components.UsersList()
     };
 
     _this.setInitialState();
@@ -64,12 +65,15 @@ var App = function (_Observer) {
         return _this2.components.messagesList.addMessage(message);
       });
       this.client.on("join", function (message) {
-        // TODO: add to users list
+        _this2.components.usersList.add(message.login);
         _this2.components.messagesList.addMessage(message);
       });
       this.client.on("leave", function (message) {
-        // TODO: remove from users list
+        _this2.components.usersList.remove(message.login);
         _this2.components.messagesList.addMessage(message);
+      });
+      this.client.on("users", function (users) {
+        return _this2.components.usersList.set(users);
       });
       this.client.on("history", function (history) {
         return _this2.components.messagesList.addMessages(history);
@@ -86,9 +90,18 @@ var App = function (_Observer) {
   }, {
     key: "setAuthorizedState",
     value: function setAuthorizedState() {
+      var main = document.createElement("section");
+      main.className = "col-xs-12 col-sm-9";
+      main.appendChild(this.components.messageForm.node);
+      main.appendChild(this.components.messagesList.node);
+
+      var aside = document.createElement("aside");
+      aside.className = "col-xs-12 col-sm-3";
+      aside.appendChild(this.components.usersList.node);
+
       this.node.innerHTML = "";
-      this.node.appendChild(this.components.messagesList.node);
-      this.node.appendChild(this.components.messageForm.node);
+      this.node.appendChild(main);
+      this.node.appendChild(aside);
     }
   }]);
 
@@ -462,7 +475,88 @@ var MessagesList = function (_Observer3) {
   return MessagesList;
 }(Observer);
 
-module.exports = { AuthForm: AuthForm, MessageForm: MessageForm, MessagesList: MessagesList };
+var UsersList = function () {
+  function UsersList() {
+    var users = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+    _classCallCheck(this, UsersList);
+
+    // counter of users
+    this.counter = document.createElement("span");
+    this.counter.className = "badge";
+
+    // header of container
+    var header = document.createElement("li");
+    header.className = "list-group-item list-group-item-info";
+    header.appendChild(document.createTextNode("Users online"));
+    header.appendChild(this.counter);
+    this.header = header;
+
+    // container
+    var ul = document.createElement("ul");
+    ul.className = "list-group";
+    this.container = ul;
+
+    this.set(users);
+  }
+
+  _createClass(UsersList, [{
+    key: "add",
+    value: function add(name) {
+      var node = this._createUserNode(name);
+      this.users.push({ name: name, node: node });
+      this.container.appendChild(node);
+      this._updateCounter();
+    }
+  }, {
+    key: "remove",
+    value: function remove(name) {
+      for (var i = this.users.length; i--;) {
+        if (name === this.users[i].name) {
+          this.container.removeChild(this.users[i].node);
+          this.users.splice(i, 1);
+          break;
+        }
+      }
+      this._updateCounter();
+    }
+  }, {
+    key: "set",
+    value: function set(users) {
+      var _this4 = this;
+
+      this.users = [];
+      this.container.innerHTML = "";
+      this.container.appendChild(this.header);
+      users.forEach(function (name) {
+        return _this4.add(name);
+      });
+      this._updateCounter();
+    }
+  }, {
+    key: "_updateCounter",
+    value: function _updateCounter() {
+      this.counter.innerHTML = this.users.length;
+    }
+  }, {
+    key: "_createUserNode",
+    value: function _createUserNode(name) {
+      var node = document.createElement("li");
+      node.className = "list-group-item";
+      node.innerHTML = name;
+      return node;
+    }
+  }, {
+    key: "node",
+    get: function get() {
+      return this.container;
+    }
+  }]);
+
+  return UsersList;
+}();
+
+module.exports = { AuthForm: AuthForm, MessageForm: MessageForm, MessagesList: MessagesList, UsersList: UsersList };
 
 },{"./observer.js":5}],4:[function(require,module,exports){
 "use strict";

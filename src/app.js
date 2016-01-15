@@ -16,6 +16,7 @@ const App = class extends Observer {
       authForm: new Components.AuthForm(),
       messageForm: new Components.MessageForm(),
       messagesList: new Components.MessagesList(),
+      usersList: new Components.UsersList(),
     };
 
     this.setInitialState();
@@ -31,16 +32,17 @@ const App = class extends Observer {
     this.components.authForm.on("submit", ({login}) => this.client.login(login));
 
     // set basic handlers
-    this.client.on("message", (message) => this.components.messagesList.addMessage(message));
-    this.client.on("join", (message) => {
-      // TODO: add to users list
-      this.components.messagesList.addMessage(message)
+    this.client.on("message", message => this.components.messagesList.addMessage(message));
+    this.client.on("join", message => {
+      this.components.usersList.add(message.login);
+      this.components.messagesList.addMessage(message);
     });
-    this.client.on("leave", (message) => {
-      // TODO: remove from users list
-      this.components.messagesList.addMessage(message)
+    this.client.on("leave", message => {
+      this.components.usersList.remove(message.login);
+      this.components.messagesList.addMessage(message);
     });
-    this.client.on("history", (history) => this.components.messagesList.addMessages(history));
+    this.client.on("users", users => this.components.usersList.set(users));
+    this.client.on("history", history => this.components.messagesList.addMessages(history));
     this.components.messageForm.on("submit", ({message}) => {
       this.client.send({
         type: "message",
@@ -50,9 +52,18 @@ const App = class extends Observer {
   }
 
   setAuthorizedState() {
+    let main = document.createElement("section");
+    main.className = "col-xs-12 col-sm-9";
+    main.appendChild(this.components.messageForm.node);
+    main.appendChild(this.components.messagesList.node);
+
+    let aside = document.createElement("aside");
+    aside.className = "col-xs-12 col-sm-3";
+    aside.appendChild(this.components.usersList.node);
+
     this.node.innerHTML = "";
-    this.node.appendChild(this.components.messagesList.node);
-    this.node.appendChild(this.components.messageForm.node);
+    this.node.appendChild(main);
+    this.node.appendChild(aside);
   }
 }
 
