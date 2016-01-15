@@ -173,7 +173,7 @@ const MessagesList = class extends Observer {
   _createMessageNode({author, time, body}) {
     let header = document.createElement("header");
     header.className = "list-group-item-heading";
-    header.innerHTML = `<span>${author}</span> <span class="text-muted">${time}</span>`;
+    header.innerHTML = `<strong>${author}</strong> <i class="text-muted">${time}</i>`;
 
     let content = document.createElement("p");
     content.className = "list-group-item-text";

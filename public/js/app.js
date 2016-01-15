@@ -60,8 +60,19 @@ var App = function (_Observer) {
       });
 
       // set basic handlers
-      this.client.on("messages", function (messages) {
-        return _this2.components.messagesList.addMessages(messages);
+      this.client.on("message", function (message) {
+        return _this2.components.messagesList.addMessage(message);
+      });
+      this.client.on("join", function (message) {
+        // TODO: add to users list
+        _this2.components.messagesList.addMessage(message);
+      });
+      this.client.on("leave", function (message) {
+        // TODO: remove from users list
+        _this2.components.messagesList.addMessage(message);
+      });
+      this.client.on("history", function (history) {
+        return _this2.components.messagesList.addMessages(history);
       });
       this.components.messageForm.on("submit", function (_ref2) {
         var message = _ref2.message;
@@ -110,7 +121,8 @@ var Client = function (_Observer) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Client).call(this));
 
     _this.state = {
-      connected: false
+      connected: false,
+      login: null
     };
     // save url
     _this.url = url;
@@ -159,13 +171,22 @@ var Client = function (_Observer) {
           this._onLogin(data);
           break;
         case "message":
-          this._onMessage(data);
+          this.notify("message", data);
           break;
-        case "messages":
-          this._onMessages(data);
+        case "join":
+          this.notify("join", data);
+          break;
+        case "leave":
+          this.notify("leave", data);
+          break;
+        case "history":
+          this.notify("history", data.messages);
+          break;
+        case "users":
+          this.notify("users", data.users);
           break;
         default:
-          throw new Error("Unknown message type:" + data.type);
+          throw new Error("Unknown message type: " + data.type);
           break;
       }
     }
@@ -178,16 +199,6 @@ var Client = function (_Observer) {
       } else {
         this.notify("login.error");
       }
-    }
-  }, {
-    key: "_onMessages",
-    value: function _onMessages(data) {
-      this.notify("messages", data.messages);
-    }
-  }, {
-    key: "_onMessage",
-    value: function _onMessage(data) {
-      this.notify("messages", [data]);
     }
   }]);
 
@@ -420,7 +431,7 @@ var MessagesList = function (_Observer3) {
 
       var header = document.createElement("header");
       header.className = "list-group-item-heading";
-      header.innerHTML = "<span>" + author + "</span> <span class=\"text-muted\">" + time + "</span>";
+      header.innerHTML = "<strong>" + author + "</strong> <i class=\"text-muted\">" + time + "</i>";
 
       var content = document.createElement("p");
       content.className = "list-group-item-text";

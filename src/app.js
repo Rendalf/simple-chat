@@ -31,7 +31,16 @@ const App = class extends Observer {
     this.components.authForm.on("submit", ({login}) => this.client.login(login));
 
     // set basic handlers
-    this.client.on("messages", (messages) => this.components.messagesList.addMessages(messages));
+    this.client.on("message", (message) => this.components.messagesList.addMessage(message));
+    this.client.on("join", (message) => {
+      // TODO: add to users list
+      this.components.messagesList.addMessage(message)
+    });
+    this.client.on("leave", (message) => {
+      // TODO: remove from users list
+      this.components.messagesList.addMessage(message)
+    });
+    this.client.on("history", (history) => this.components.messagesList.addMessages(history));
     this.components.messageForm.on("submit", ({message}) => {
       this.client.send({
         type: "message",

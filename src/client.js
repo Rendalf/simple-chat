@@ -7,7 +7,8 @@ const Client = class extends Observer {
     super();
     // initialize state
     this.state = {
-      connected: false
+      connected: false,
+      login: null
     };
     // save url
     this.url = url;
@@ -49,13 +50,22 @@ const Client = class extends Observer {
         this._onLogin(data);
         break;
       case "message":
-        this._onMessage(data);
+        this.notify("message", data);
         break;
-      case "messages":
-        this._onMessages(data);
+      case "join":
+        this.notify("join", data);
+        break;
+      case "leave":
+        this.notify("leave", data);
+        break;
+      case "history":
+        this.notify("history", data.messages);
+        break;
+      case "users":
+        this.notify("users", data.users);
         break;
       default:
-        throw new Error("Unknown message type:" + data.type);
+        throw new Error(`Unknown message type: ${data.type}`);
         break;
     }
   }
@@ -67,14 +77,6 @@ const Client = class extends Observer {
     } else {
       this.notify("login.error");
     }
-  }
-
-  _onMessages(data) {
-    this.notify("messages", data.messages);
-  }
-
-  _onMessage(data) {
-    this.notify("messages", [data]);
   }
 }
 
