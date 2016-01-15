@@ -97,8 +97,7 @@ const ChatServer = class {
     }
 
     // if login is used - send failed
-    let logins = this.connections.map(connection => connection.login);
-    if (data.login === this.name || data.login in logins) {
+    if (data.login === this.name || this.connections.find(connection => connection.login === data.login)) {
 
       connection.send(JSON.stringify({
         type: "login",
@@ -133,7 +132,7 @@ const ChatServer = class {
         type: "join",
         author: this.name,
         body: `${connection.login} has joined`,
-        user: connection.login,
+        login: connection.login,
       });
 
       // send connected users
@@ -163,7 +162,7 @@ const ChatServer = class {
     this.broadcast({
       type: "leave",
       author: this.name,
-      user: connection.login,
+      login: connection.login,
       body: `${connection.login} has left chat`,
     });
   }
