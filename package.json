@@ -1,0 +1,24 @@
+{
+  "name": "simple-chat",
+  "version": "0.0.1",
+  "description": "My simple chat on websockets",
+  "main": "server.js",
+  "scripts": {
+    "build": "gulp build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ar.lipatov93@yandex.ru",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-preset-es2015": "latest",
+    "babelify": "latest",
+    "browserify": "latest",
+    "gulp": "latest",
+    "vinyl-buffer": "latest",
+    "vinyl-source-stream": "latest"
+  },
+  "dependencies": {
+    "node-static": "^0.7.7",
+    "ws": "^1.0.1"
+  }
+}
