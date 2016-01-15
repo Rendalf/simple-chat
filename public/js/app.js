@@ -322,12 +322,19 @@ var MessageForm = function (_Observer2) {
 
     _this2.eventHandlers = {};
     _this2.eventHandlers.onSubmit = function (event) {
-      event.preventDefault();
-      event.stopPropagation();
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       _this2.notify("submit", {
         message: _this2.elements.input.value
       });
       _this2.elements.input.value = "";
+    };
+    _this2.eventHandlers.onInputKeyPress = function (event) {
+      if (event.ctrlKey && event.keyCode === 10) {
+        _this2.eventHandlers.onSubmit();
+      }
     };
 
     // elements
@@ -339,6 +346,7 @@ var MessageForm = function (_Observer2) {
     input.setAttribute("placeholder", "Input message here");
     input.setAttribute("name", "message");
     input.setAttribute("rows", 4);
+    input.addEventListener("keypress", _this2.eventHandlers.onInputKeyPress);
     _this2.elements.input = input;
 
     // button

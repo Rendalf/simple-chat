@@ -84,12 +84,19 @@ const MessageForm = class extends Observer {
     // event handlers
     this.eventHandlers = {};
     this.eventHandlers.onSubmit = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       this.notify("submit", {
         message: this.elements.input.value
       });
       this.elements.input.value = "";
+    }
+    this.eventHandlers.onInputKeyPress = (event) => {
+      if (event.ctrlKey && event.keyCode === 10) {
+        this.eventHandlers.onSubmit();
+      }
     }
 
     // elements
@@ -101,6 +108,7 @@ const MessageForm = class extends Observer {
     input.setAttribute("placeholder", "Input message here");
     input.setAttribute("name", "message");
     input.setAttribute("rows", 4);
+    input.addEventListener("keypress", this.eventHandlers.onInputKeyPress);
     this.elements.input = input;
 
     // button
