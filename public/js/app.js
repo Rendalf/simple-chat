@@ -231,6 +231,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var Observer = require("./observer.js");
 
+var myEscape = function () {
+  var toReplace = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;"
+  };
+  var regExp = new RegExp("[" + Object.keys(toReplace).join('') + "]", "g");
+  var tagReplace = function tagReplace(tag) {
+    return toReplace[tag];
+  };
+  return function (text) {
+    return text.replace(regExp, tagReplace);
+  };
+}();
+
 // form for authorization
 var AuthForm = function (_Observer) {
   _inherits(AuthForm, _Observer);
@@ -488,7 +503,7 @@ var MessagesList = function (_Observer3) {
       }
     }
 
-    // set count of messages that not uploaded
+    // set count of messages that not loaded
 
   }, {
     key: "setLeft",
@@ -530,11 +545,11 @@ var MessagesList = function (_Observer3) {
       // header of item
       var header = document.createElement("header");
       header.className = "list-group-item-heading";
-      header.innerHTML = "<strong>" + author + "</strong> <i class=\"text-muted\">" + time + "</i>";
+      header.innerHTML = "<strong>" + myEscape(author) + "</strong> <i class=\"text-muted\">" + time + "</i>";
       // body of message
       var content = document.createElement("p");
       content.className = "list-group-item-text";
-      content.innerHTML = body.replace(/\n/g, "<br>");
+      content.innerHTML = myEscape(body).replace(/\n/g, "<br>");
       // node o message
       var node = document.createElement("li");
       node.className = "list-group-item";
@@ -621,7 +636,7 @@ var UsersList = function () {
     value: function _createUserNode(name) {
       var node = document.createElement("li");
       node.className = "list-group-item";
-      node.innerHTML = name;
+      node.innerHTML = myEscape(name);
       return node;
     }
   }, {

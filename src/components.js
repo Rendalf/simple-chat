@@ -1,5 +1,18 @@
 const Observer = require("./observer.js");
 
+const myEscape = (function() {
+  const toReplace = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+  };
+  const regExp = new RegExp(`[${Object.keys(toReplace).join('')}]`, "g");
+  const tagReplace = tag => toReplace[tag];
+  return (function(text) {
+    return text.replace(regExp, tagReplace);
+  });
+})();
+
 // form for authorization
 const AuthForm = class extends Observer {
   constructor() {
@@ -215,7 +228,7 @@ const MessagesList = class extends Observer {
     }
   }
 
-  // set count of messages that not uploaded
+  // set count of messages that not loaded
   setLeft(newLeft) {
     if (this.left > 0 && newLeft === 0) {
       this.container.removeChild(this.buttonLoadMore);
@@ -242,11 +255,11 @@ const MessagesList = class extends Observer {
     // header of item
     let header = document.createElement("header");
     header.className = "list-group-item-heading";
-    header.innerHTML = `<strong>${author}</strong> <i class="text-muted">${time}</i>`;
+    header.innerHTML = `<strong>${myEscape(author)}</strong> <i class="text-muted">${time}</i>`;
     // body of message
     let content = document.createElement("p");
     content.className = "list-group-item-text";
-    content.innerHTML = body.replace(/\n/g, "<br>");
+    content.innerHTML = myEscape(body).replace(/\n/g, "<br>");
     // node o message
     let node = document.createElement("li");
     node.className = "list-group-item";
@@ -315,7 +328,7 @@ const UsersList = class {
   _createUserNode(name) {
     let node = document.createElement("li");
     node.className = "list-group-item";
-    node.innerHTML = name;
+    node.innerHTML = myEscape(name);
     return node;
   }
 }
