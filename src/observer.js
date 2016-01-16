@@ -1,5 +1,3 @@
-"use strict";
-
 const Observer = class {
   constructor() {
     // create map of subscribers

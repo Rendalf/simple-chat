@@ -1,5 +1,3 @@
-"use strict";
-
 const socketUrl = "ws://localhost:9000";
 
 const App = require("./app.js");

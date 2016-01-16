@@ -78,13 +78,11 @@ var App = function (_Observer) {
       this.client.on("history", function (history) {
         return _this2.components.messagesList.addMessages(history);
       });
-      this.components.messageForm.on("submit", function (_ref2) {
-        var message = _ref2.message;
-
-        _this2.client.send({
-          type: "message",
-          body: message
-        });
+      this.components.messageForm.on("submit", function (data) {
+        _this2.client.send(Object.assign({ type: "message" }, data));
+      });
+      this.components.messagesList.on("history.more", function (data) {
+        _this2.client.send(Object.assign({ type: "history" }, data));
       });
     }
   }, {
@@ -193,7 +191,7 @@ var Client = function (_Observer) {
           this.notify("leave", data);
           break;
         case "history":
-          this.notify("history", data.messages);
+          this.notify("history", data);
           break;
         case "users":
           this.notify("users", data.users);
@@ -340,7 +338,7 @@ var MessageForm = function (_Observer2) {
         event.stopPropagation();
       }
       _this2.notify("submit", {
-        message: _this2.elements.input.value
+        body: _this2.elements.input.value
       });
       _this2.elements.input.value = "";
     };
@@ -407,44 +405,121 @@ var MessagesList = function (_Observer3) {
 
   // message must have props: author, time, body
 
-  function MessagesList(messages) {
+  function MessagesList(messagesData) {
     _classCallCheck(this, MessagesList);
 
-    // create container
+    // history storage
 
     var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(MessagesList).call(this));
 
+    _this3.history = [];
+    // count of unloaded messages
+    _this3.left = 0;
+
+    // create container
     _this3.container = document.createElement("ul");
     _this3.container.className = "list-group";
     _this3.container.style["overflow-y"] = "scroll";
     _this3.container.style["max-height"] = "480px";
 
-    if (messages) {
-      _this3.addMessages(messages);
+    // counter of unloaded messages (history)
+    var leftCounter = document.createElement("span");
+    leftCounter.className = "badge";
+    leftCounter.innerHTML = _this3.left;
+    _this3.leftCounter = leftCounter;
+
+    // create button for load more messages
+    var buttonLoadMore = document.createElement("button");
+    buttonLoadMore.className = "btn btn-link";
+    buttonLoadMore.appendChild(document.createTextNode("Load more"));
+    buttonLoadMore.appendChild(_this3.leftCounter);
+    buttonLoadMore.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      _this3.notify("history.more", { lastId: _this3.history[_this3.history.length - 1].id });
+    });
+    var wrapperButtonLoadMore = document.createElement("li");
+    wrapperButtonLoadMore.className = "list-group-item text-center";
+    wrapperButtonLoadMore.appendChild(buttonLoadMore);
+    _this3.buttonLoadMore = wrapperButtonLoadMore;
+
+    // add history if passed
+    if (messagesData) {
+      _this3.addMessages(messagesData);
     }
     return _this3;
   }
 
+  // get root node of component
+
   _createClass(MessagesList, [{
-    key: "addMessage",
-    value: function addMessage(message) {
-      this._addMessageNode(this._createMessageNode(message));
-    }
-  }, {
     key: "addMessages",
-    value: function addMessages(messages) {
-      messages.reverse();
-      messages.forEach(this.addMessage.bind(this));
+
+    // add chunk of history to storage and DOM
+    value: function addMessages(data) {
+      var _this4 = this;
+
+      data.messages.forEach(function (message) {
+        return _this4.addMessage(message);
+      });
+      this.setLeft(data.left);
     }
+
+    // add new message to DOM and storage
+
+  }, {
+    key: "addMessage",
+    value: function addMessage(data) {
+      // copy
+      var newMessage = Object.assign({}, data);
+      // create node
+      newMessage.node = this._createMessageNode(newMessage);
+      // search next message to insert to right place
+      var nextMessage = this.history.find(function (message) {
+        return message.id < newMessage.id;
+      });
+      // add message to storage and add node to container
+      if (nextMessage) {
+        this.history.splice(this.history.indexOf(nextMessage), 0, newMessage);
+        this._addMessageNode(newMessage.node, nextMessage.node);
+      } else {
+        this.history.push(newMessage);
+        this._addMessageNode(newMessage.node);
+      }
+    }
+
+    // set count of messages that not uploaded
+
+  }, {
+    key: "setLeft",
+    value: function setLeft(newLeft) {
+      if (this.left > 0 && newLeft === 0) {
+        this.container.removeChild(this.buttonLoadMore);
+      } else if (this.left === 0 && newLeft > 0) {
+        this.container.appendChild(this.buttonLoadMore);
+      }
+      this.left = newLeft;
+      this.leftCounter.innerHTML = this.left;
+    }
+
+    // add message node before passed second node or to beginning
+
   }, {
     key: "_addMessageNode",
     value: function _addMessageNode(messageNode) {
-      if (this.container.childNodes.length > 0) {
-        this.container.insertBefore(messageNode, this.container.childNodes[0]);
+      var nextNode = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+      if (nextNode) {
+        this.container.insertBefore(messageNode, nextNode);
+      } else if (this.left > 0) {
+        this.container.insertBefore(messageNode, this.buttonLoadMore);
       } else {
         this.container.appendChild(messageNode);
       }
     }
+
+    // create node of message
+
   }, {
     key: "_createMessageNode",
     value: function _createMessageNode(_ref) {
@@ -452,19 +527,19 @@ var MessagesList = function (_Observer3) {
       var time = _ref.time;
       var body = _ref.body;
 
+      // header of item
       var header = document.createElement("header");
       header.className = "list-group-item-heading";
       header.innerHTML = "<strong>" + author + "</strong> <i class=\"text-muted\">" + time + "</i>";
-
+      // body of message
       var content = document.createElement("p");
       content.className = "list-group-item-text";
       content.innerHTML = body.replace(/\n/g, "<br>");
-
+      // node o message
       var node = document.createElement("li");
       node.className = "list-group-item";
       node.appendChild(header);
       node.appendChild(content);
-
       return node;
     }
   }, {
@@ -477,6 +552,7 @@ var MessagesList = function (_Observer3) {
   return MessagesList;
 }(Observer);
 
+// list of users
 var UsersList = function () {
   function UsersList() {
     var users = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
@@ -525,13 +601,13 @@ var UsersList = function () {
   }, {
     key: "set",
     value: function set(users) {
-      var _this4 = this;
+      var _this5 = this;
 
       this.users = [];
       this.container.innerHTML = "";
       this.container.appendChild(this.header);
       users.forEach(function (name) {
-        return _this4.add(name);
+        return _this5.add(name);
       });
       this._updateCounter();
     }

@@ -1,5 +1,3 @@
-"use strict";
-
 const Observer = require("./observer.js");
 
 const Client = class extends Observer {
@@ -59,7 +57,7 @@ const Client = class extends Observer {
         this.notify("leave", data);
         break;
       case "history":
-        this.notify("history", data.messages);
+        this.notify("history", data);
         break;
       case "users":
         this.notify("users", data.users);

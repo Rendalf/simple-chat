@@ -11,7 +11,7 @@ const History = class {
   // set time and id, add to storage and return
   push(message) {
     message.time = (new Date()).toTimeString();
-    message.id = this.messages.push() - 1;
+    message.id = this.messages.push(message) - 1;
     return message;
   }
 
@@ -25,6 +25,11 @@ const History = class {
     return this.messages[this.messages.length - 1];
   }
 
+  // how many messages is left before passed id
+  left(last) {
+    return this.messages.slice(0, last).length;
+  }
+
   // get chunk of messages
   chunk(first, size) {
     return this.messages.slice(first, first + size);
@@ -32,6 +37,9 @@ const History = class {
 
   // get chunk of history (by last sent message id)
   chunkHistory(last, size) {
+    if (last === undefined || last === null) {
+      return this.messages.slice(-size);
+    }
     var first = last - size;
     first = first < 0 ? 0 : first;
     return this.messages.slice(first, last);
@@ -45,7 +53,7 @@ const ChatServer = class {
     // name of server that will be used in chat
     this.name = "Server";
     // size of chunk history
-    this._historyChunkSize = 1;
+    this._historyChunkSize = 10;
     // connections (authorized users)
     this.connections = [];
     // create history storage
@@ -73,15 +81,13 @@ const ChatServer = class {
 
   // send history chunk to user
   _sendHistoryChunk(connection, lastId) {
-    if (typeof lastId === "undefined" || typeof lastId === "null") {
-      lastId = this.history.last.id;
-    }
     var messages = this.history.chunkHistory(lastId, this._historyChunkSize);
-
+    var left = messages.length > 0 ? this.history.left(messages[0].id) : 0;
     this.send({
       type: "history",
+      requestedLastId : lastId, 
       messages,
-      hasMore: messages[0].id > 0
+      left
     }, connection);
   }
 

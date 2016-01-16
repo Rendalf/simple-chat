@@ -43,11 +43,11 @@ const App = class extends Observer {
     });
     this.client.on("users", users => this.components.usersList.set(users));
     this.client.on("history", history => this.components.messagesList.addMessages(history));
-    this.components.messageForm.on("submit", ({message}) => {
-      this.client.send({
-        type: "message",
-        body: message,
-      })
+    this.components.messageForm.on("submit", (data) => {
+      this.client.send(Object.assign({type: "message"}, data))
+    });
+    this.components.messagesList.on("history.more", (data) => {
+      this.client.send(Object.assign({type: "history"}, data));
     });
   }
 
