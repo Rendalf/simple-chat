@@ -1,3 +1,5 @@
+// pattern observer (on/notify)
+
 const Observer = class {
   constructor() {
     // create map of subscribers

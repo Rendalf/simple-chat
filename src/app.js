@@ -1,34 +1,44 @@
+// chat client application class
+
 const Client = require("./client.js");
 const Observer = require("./observer.js");
-const Components = require("./components.js");
+const AuthForm = require("./components/auth-form.js");
+const MessageForm = require("./components/message-form.js");
+const MessagesList = require("./components/messages-list.js");
+const UsersList = require("./components/users-list.js");
 
-var authForm = new Components.AuthForm();
-
+// application class
 const App = class extends Observer {
   // settings:
   //  socketUrl
   //  node (appNode)
   constructor(settings) {
     super();
+
+    // client
     this.client = new Client(settings.socketUrl);
+    // node that will be used to mount root node
     this.node = settings.node;
+    // set components of app
     this.components = {
-      authForm: new Components.AuthForm(),
-      messageForm: new Components.MessageForm(),
-      messagesList: new Components.MessagesList(),
-      usersList: new Components.UsersList(),
+      authForm: new AuthForm(),
+      messageForm: new MessageForm(),
+      messagesList: new MessagesList(),
+      usersList: new UsersList(),
     };
 
     this.setInitialState();
   }
 
+  // set initial state of application
   setInitialState() {
+    // mount auth form node
     this.node.innerHTML = "";
     this.node.appendChild(this.components.authForm.node);
 
     // set handlers for login
     this.client.on("login.success", () => this.setAuthorizedState());
-    this.client.on("login.error", () => this.components.authForm.setError());
+    this.client.on("login.error", () => this.components.authForm.showError());
     this.components.authForm.on("submit", ({login}) => this.client.login(login));
 
     // set basic handlers
@@ -51,20 +61,24 @@ const App = class extends Observer {
     });
   }
 
+  // set state after login
   setAuthorizedState() {
+    // main region of chat applicaton
     let main = document.createElement("section");
     main.className = "col-xs-12 col-sm-9";
     main.appendChild(this.components.messageForm.node);
     main.appendChild(this.components.messagesList.node);
 
+    // aside region of chat applicaton
     let aside = document.createElement("aside");
     aside.className = "col-xs-12 col-sm-3";
     aside.appendChild(this.components.usersList.node);
 
+    // mount regions
     this.node.innerHTML = "";
     this.node.appendChild(main);
     this.node.appendChild(aside);
   }
-}
+};
 
 module.exports = App;

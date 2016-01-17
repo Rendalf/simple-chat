@@ -1,27 +1,36 @@
+// chat client for connection with chat server
+
 const Observer = require("./observer.js");
 
+// client class
 const Client = class extends Observer {
   constructor(url) {
     super();
+
     // initialize state
     this.state = {
       connected: false,
       login: null
     };
+
     // save url
     this.url = url;
+
     // create socket
     this.socket = new WebSocket(this.url);
+
     // event handlers
     this.socket.onopen = this._onOpen.bind(this);
     this.socket.onclose = this._onClose.bind(this);
     this.socket.onmessage = this._onReceived.bind(this);
   }
 
+  // send message
   send(data) {
     this.socket.send(JSON.stringify(data));
   }
 
+  // try login
   login(login) {
     this.send({
       type: "login",
@@ -29,18 +38,21 @@ const Client = class extends Observer {
     });
   }
 
+  // handle event opened connection
   _onOpen() {
     this.state.connected = true;
     console.log("Connected...");
     this.notify("open");
   }
 
+  // handle event closed connection
   _onClose(event) {
     this.state.connected = false;
     console.log("Disconnected...");
     this.notify("closed");
   }
 
+  // handle received data
   _onReceived(event) {
     let data = JSON.parse(event.data);
     switch (data.type) {
@@ -68,6 +80,7 @@ const Client = class extends Observer {
     }
   }
 
+  // on login message
   _onLogin(data) {
     if (data.status) {
       this.state.login = data.login;

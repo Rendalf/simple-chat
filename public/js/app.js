@@ -21,12 +21,16 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// chat client application class
+
 var Client = require("./client.js");
 var Observer = require("./observer.js");
-var Components = require("./components.js");
+var AuthForm = require("./components/auth-form.js");
+var MessageForm = require("./components/message-form.js");
+var MessagesList = require("./components/messages-list.js");
+var UsersList = require("./components/users-list.js");
 
-var authForm = new Components.AuthForm();
-
+// application class
 var App = function (_Observer) {
   _inherits(App, _Observer);
 
@@ -37,26 +41,33 @@ var App = function (_Observer) {
   function App(settings) {
     _classCallCheck(this, App);
 
+    // client
+
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
 
     _this.client = new Client(settings.socketUrl);
+    // node that will be used to mount root node
     _this.node = settings.node;
+    // set components of app
     _this.components = {
-      authForm: new Components.AuthForm(),
-      messageForm: new Components.MessageForm(),
-      messagesList: new Components.MessagesList(),
-      usersList: new Components.UsersList()
+      authForm: new AuthForm(),
+      messageForm: new MessageForm(),
+      messagesList: new MessagesList(),
+      usersList: new UsersList()
     };
 
     _this.setInitialState();
     return _this;
   }
 
+  // set initial state of application
+
   _createClass(App, [{
     key: "setInitialState",
     value: function setInitialState() {
       var _this2 = this;
 
+      // mount auth form node
       this.node.innerHTML = "";
       this.node.appendChild(this.components.authForm.node);
 
@@ -65,7 +76,7 @@ var App = function (_Observer) {
         return _this2.setAuthorizedState();
       });
       this.client.on("login.error", function () {
-        return _this2.components.authForm.setError();
+        return _this2.components.authForm.showError();
       });
       this.components.authForm.on("submit", function (_ref) {
         var login = _ref.login;
@@ -97,18 +108,24 @@ var App = function (_Observer) {
         _this2.client.send(Object.assign({ type: "history" }, data));
       });
     }
+
+    // set state after login
+
   }, {
     key: "setAuthorizedState",
     value: function setAuthorizedState() {
+      // main region of chat applicaton
       var main = document.createElement("section");
       main.className = "col-xs-12 col-sm-9";
       main.appendChild(this.components.messageForm.node);
       main.appendChild(this.components.messagesList.node);
 
+      // aside region of chat applicaton
       var aside = document.createElement("aside");
       aside.className = "col-xs-12 col-sm-3";
       aside.appendChild(this.components.usersList.node);
 
+      // mount regions
       this.node.innerHTML = "";
       this.node.appendChild(main);
       this.node.appendChild(aside);
@@ -120,7 +137,7 @@ var App = function (_Observer) {
 
 module.exports = App;
 
-},{"./client.js":3,"./components.js":4,"./observer.js":6}],3:[function(require,module,exports){
+},{"./client.js":3,"./components/auth-form.js":4,"./components/message-form.js":5,"./components/messages-list.js":6,"./components/users-list.js":7,"./observer.js":10}],3:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -131,8 +148,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// chat client for connection with chat server
+
 var Observer = require("./observer.js");
 
+// client class
 var Client = function (_Observer) {
   _inherits(Client, _Observer);
 
@@ -147,10 +167,13 @@ var Client = function (_Observer) {
       connected: false,
       login: null
     };
+
     // save url
     _this.url = url;
+
     // create socket
     _this.socket = new WebSocket(_this.url);
+
     // event handlers
     _this.socket.onopen = _this._onOpen.bind(_this);
     _this.socket.onclose = _this._onClose.bind(_this);
@@ -158,11 +181,16 @@ var Client = function (_Observer) {
     return _this;
   }
 
+  // send message
+
   _createClass(Client, [{
     key: "send",
     value: function send(data) {
       this.socket.send(JSON.stringify(data));
     }
+
+    // try login
+
   }, {
     key: "login",
     value: function login(_login) {
@@ -171,6 +199,9 @@ var Client = function (_Observer) {
         login: _login
       });
     }
+
+    // handle event opened connection
+
   }, {
     key: "_onOpen",
     value: function _onOpen() {
@@ -178,6 +209,9 @@ var Client = function (_Observer) {
       console.log("Connected...");
       this.notify("open");
     }
+
+    // handle event closed connection
+
   }, {
     key: "_onClose",
     value: function _onClose(event) {
@@ -185,6 +219,9 @@ var Client = function (_Observer) {
       console.log("Disconnected...");
       this.notify("closed");
     }
+
+    // handle received data
+
   }, {
     key: "_onReceived",
     value: function _onReceived(event) {
@@ -213,6 +250,9 @@ var Client = function (_Observer) {
           break;
       }
     }
+
+    // on login message
+
   }, {
     key: "_onLogin",
     value: function _onLogin(data) {
@@ -230,7 +270,7 @@ var Client = function (_Observer) {
 
 module.exports = Client;
 
-},{"./observer.js":6}],4:[function(require,module,exports){
+},{"./observer.js":10}],4:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -241,37 +281,25 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Observer = require("./observer.js");
+// component form for login into chat
 
-var myEscape = function () {
-  var toReplace = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;"
-  };
-  var regExp = new RegExp("[" + Object.keys(toReplace).join('') + "]", "g");
-  var tagReplace = function tagReplace(tag) {
-    return toReplace[tag];
-  };
-  return function (text) {
-    return text.replace(regExp, tagReplace);
-  };
-}();
+var Observer = require("../observer.js");
 
-// form for authorization
 var AuthForm = function (_Observer) {
   _inherits(AuthForm, _Observer);
 
   function AuthForm() {
     _classCallCheck(this, AuthForm);
 
+    // hide error by default
+
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AuthForm).call(this));
 
-    _this.state = { error: false };
+    _this.error = false;
 
     // create event handlers
     _this.eventHandlers = {};
-    _this.eventHandlers.onChangeInput = _this.unsetError.bind(_this);
+    _this.eventHandlers.onChangeInput = _this.hideError.bind(_this);
     _this.eventHandlers.onSubmit = function (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -319,24 +347,32 @@ var AuthForm = function (_Observer) {
     return _this;
   }
 
+  // show error (nickname must be unique)
+
   _createClass(AuthForm, [{
-    key: "setError",
-    value: function setError() {
-      if (!this.state.error) {
-        this.state.error = true;
+    key: "showError",
+    value: function showError() {
+      if (!this.error) {
+        this.error = true;
         this.elements.form.appendChild(this.elements.errorNotice);
         this.elements.input.addEventListener("keydown", this.eventHandlers.onChangeInput);
       }
     }
+
+    // hide error (nickname must be unique)
+
   }, {
-    key: "unsetError",
-    value: function unsetError() {
-      if (this.state.error) {
-        this.state.error = false;
+    key: "hideError",
+    value: function hideError() {
+      if (this.error) {
+        this.error = false;
         this.elements.form.removeChild(this.elements.errorNotice);
         this.elements.input.removeEventListener("keydown", this.eventHandlers.onChangeInput);
       }
     }
+
+    // get root node
+
   }, {
     key: "node",
     get: function get() {
@@ -347,36 +383,53 @@ var AuthForm = function (_Observer) {
   return AuthForm;
 }(Observer);
 
+module.exports = AuthForm;
+
+},{"../observer.js":10}],5:[function(require,module,exports){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+// component message form
+
+var Observer = require("../observer.js");
+
 // message form
-var MessageForm = function (_Observer2) {
-  _inherits(MessageForm, _Observer2);
+var MessageForm = function (_Observer) {
+  _inherits(MessageForm, _Observer);
 
   function MessageForm() {
     _classCallCheck(this, MessageForm);
 
     // event handlers
 
-    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(MessageForm).call(this));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MessageForm).call(this));
 
-    _this2.eventHandlers = {};
-    _this2.eventHandlers.onSubmit = function (event) {
+    _this.eventHandlers = {};
+    _this.eventHandlers.onSubmit = function (event) {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      _this2.notify("submit", {
-        body: _this2.elements.input.value
+      _this.notify("submit", {
+        body: _this.elements.input.value
       });
-      _this2.elements.input.value = "";
+      _this.elements.input.value = "";
     };
-    _this2.eventHandlers.onInputKeyPress = function (event) {
+    _this.eventHandlers.onInputKeyPress = function (event) {
       if (event.ctrlKey && event.keyCode === 10) {
-        _this2.eventHandlers.onSubmit();
+        _this.eventHandlers.onSubmit();
       }
     };
 
     // elements
-    _this2.elements = {};
+    _this.elements = {};
 
     // input textarea
     var input = document.createElement("textarea");
@@ -384,34 +437,34 @@ var MessageForm = function (_Observer2) {
     input.setAttribute("placeholder", "Input message here");
     input.setAttribute("name", "message");
     input.setAttribute("rows", 4);
-    input.addEventListener("keypress", _this2.eventHandlers.onInputKeyPress);
-    _this2.elements.input = input;
+    input.addEventListener("keypress", _this.eventHandlers.onInputKeyPress);
+    _this.elements.input = input;
 
     // button
     var button = document.createElement("button");
     button.className = "btn btn-primary";
     button.innerHTML = "Send";
     button.setAttribute("type", "submit");
-    _this2.elements.button = button;
+    _this.elements.button = button;
 
     // fieldsets
     var fieldSetInput = document.createElement("fieldset");
     fieldSetInput.className = "form-group";
     var fieldSetButton = fieldSetInput.cloneNode();
-    fieldSetInput.appendChild(_this2.elements.input);
-    fieldSetButton.appendChild(_this2.elements.button);
-    _this2.elements.fieldSetInput = fieldSetInput;
-    _this2.elements.fieldSetButton = fieldSetButton;
+    fieldSetInput.appendChild(_this.elements.input);
+    fieldSetButton.appendChild(_this.elements.button);
+    _this.elements.fieldSetInput = fieldSetInput;
+    _this.elements.fieldSetButton = fieldSetButton;
 
     // form
     var form = document.createElement("form");
     form.className = "text-center";
     form.setAttribute("id", "send-message");
-    form.appendChild(_this2.elements.fieldSetInput);
-    form.appendChild(_this2.elements.fieldSetButton);
-    form.addEventListener("submit", _this2.eventHandlers.onSubmit);
-    _this2.elements.form = form;
-    return _this2;
+    form.appendChild(_this.elements.fieldSetInput);
+    form.appendChild(_this.elements.fieldSetButton);
+    form.addEventListener("submit", _this.eventHandlers.onSubmit);
+    _this.elements.form = form;
+    return _this;
   }
 
   // root node
@@ -426,9 +479,27 @@ var MessageForm = function (_Observer2) {
   return MessageForm;
 }(Observer);
 
+module.exports = MessageForm;
+
+},{"../observer.js":10}],6:[function(require,module,exports){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+// component message list (history of chat)
+
+var Observer = require("../observer.js");
+var myEscape = require("../escape.js");
+
 // list of messages
-var MessagesList = function (_Observer3) {
-  _inherits(MessagesList, _Observer3);
+var MessagesList = function (_Observer) {
+  _inherits(MessagesList, _Observer);
 
   // message must have props: author, time, body
 
@@ -437,44 +508,44 @@ var MessagesList = function (_Observer3) {
 
     // history storage
 
-    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(MessagesList).call(this));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MessagesList).call(this));
 
-    _this3.history = [];
+    _this.history = [];
     // count of unloaded messages
-    _this3.left = 0;
+    _this.left = 0;
 
     // create container
-    _this3.container = document.createElement("ul");
-    _this3.container.className = "list-group";
-    _this3.container.style["overflow-y"] = "scroll";
-    _this3.container.style["max-height"] = "480px";
+    _this.container = document.createElement("ul");
+    _this.container.className = "list-group";
+    _this.container.style["overflow-y"] = "scroll";
+    _this.container.style["max-height"] = "480px";
 
     // counter of unloaded messages (history)
     var leftCounter = document.createElement("span");
     leftCounter.className = "badge";
-    leftCounter.innerHTML = _this3.left;
-    _this3.leftCounter = leftCounter;
+    leftCounter.innerHTML = _this.left;
+    _this.leftCounter = leftCounter;
 
     // create button for load more messages
     var buttonLoadMore = document.createElement("button");
     buttonLoadMore.className = "btn btn-link";
     buttonLoadMore.appendChild(document.createTextNode("Load more"));
-    buttonLoadMore.appendChild(_this3.leftCounter);
+    buttonLoadMore.appendChild(_this.leftCounter);
     buttonLoadMore.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
-      _this3.notify("history.more", { lastId: _this3.history[_this3.history.length - 1].id });
+      _this.notify("history.more", { lastId: _this.history[_this.history.length - 1].id });
     });
     var wrapperButtonLoadMore = document.createElement("li");
     wrapperButtonLoadMore.className = "list-group-item text-center";
     wrapperButtonLoadMore.appendChild(buttonLoadMore);
-    _this3.buttonLoadMore = wrapperButtonLoadMore;
+    _this.buttonLoadMore = wrapperButtonLoadMore;
 
     // add history if passed
     if (messagesData) {
-      _this3.addMessages(messagesData);
+      _this.addMessages(messagesData);
     }
-    return _this3;
+    return _this;
   }
 
   // get root node of component
@@ -484,10 +555,10 @@ var MessagesList = function (_Observer3) {
 
     // add chunk of history to storage and DOM
     value: function addMessages(data) {
-      var _this4 = this;
+      var _this2 = this;
 
       data.messages.forEach(function (message) {
-        return _this4.addMessage(message);
+        return _this2.addMessage(message);
       });
       this.setLeft(data.left);
     }
@@ -579,6 +650,19 @@ var MessagesList = function (_Observer3) {
   return MessagesList;
 }(Observer);
 
+module.exports = MessagesList;
+
+},{"../escape.js":8,"../observer.js":10}],7:[function(require,module,exports){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// component list of users
+
+var myEscape = require("../escape.js");
+
 // list of users
 var UsersList = function () {
   function UsersList() {
@@ -605,14 +689,21 @@ var UsersList = function () {
     this.set(users);
   }
 
+  // get root node
+
   _createClass(UsersList, [{
     key: "add",
+
+    // add user
     value: function add(name) {
       var node = this._createUserNode(name);
       this.users.push({ name: name, node: node });
       this.container.appendChild(node);
       this._updateCounter();
     }
+
+    // add user by name
+
   }, {
     key: "remove",
     value: function remove(name) {
@@ -625,24 +716,33 @@ var UsersList = function () {
       }
       this._updateCounter();
     }
+
+    // set users
+
   }, {
     key: "set",
     value: function set(users) {
-      var _this5 = this;
+      var _this = this;
 
       this.users = [];
       this.container.innerHTML = "";
       this.container.appendChild(this.header);
       users.forEach(function (name) {
-        return _this5.add(name);
+        return _this.add(name);
       });
       this._updateCounter();
     }
+
+    // update counter of users
+
   }, {
     key: "_updateCounter",
     value: function _updateCounter() {
       this.counter.innerHTML = this.users.length;
     }
+
+    // create item of list node
+
   }, {
     key: "_createUserNode",
     value: function _createUserNode(name) {
@@ -661,25 +761,55 @@ var UsersList = function () {
   return UsersList;
 }();
 
-module.exports = { AuthForm: AuthForm, MessageForm: MessageForm, MessagesList: MessagesList, UsersList: UsersList };
+module.exports = UsersList;
 
-},{"./observer.js":6}],5:[function(require,module,exports){
+},{"../escape.js":8}],8:[function(require,module,exports){
 "use strict";
+
+// function that make string escaped and prevent XSS
+
+// rules for replacing chars
+var replaceRules = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;"
+};
+
+// generate function
+var escape = function (toReplace) {
+  var regExp = new RegExp("[" + Object.keys(toReplace).join('') + "]", "g");
+  var tagReplace = function tagReplace(tag) {
+    return toReplace[tag];
+  };
+  return function (text) {
+    return text.replace(regExp, tagReplace);
+  };
+}(replaceRules);
+
+module.exports = escape;
+
+},{}],9:[function(require,module,exports){
+"use strict";
+
+// run app
 
 var config = require("../config.json");
 var App = require("./app.js");
 
+// create app example and run
 var app = new App({
   socketUrl: "ws://" + config["chat-server"].origin + ":" + config["chat-server"].port,
   node: document.getElementById("app")
 });
 
-},{"../config.json":1,"./app.js":2}],6:[function(require,module,exports){
+},{"../config.json":1,"./app.js":2}],10:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// pattern observer (on/notify)
 
 var Observer = function () {
   function Observer() {
@@ -721,4 +851,4 @@ var Observer = function () {
 
 module.exports = Observer;
 
-},{}]},{},[5]);
+},{}]},{},[9]);
