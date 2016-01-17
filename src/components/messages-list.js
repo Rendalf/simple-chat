@@ -2,6 +2,7 @@
 
 const Observer = require("../observer.js");
 const myEscape = require("../escape.js");
+const smilify = require("./smilify.js");
 
 // list of messages
 const MessagesList = class extends Observer {
@@ -107,7 +108,7 @@ const MessagesList = class extends Observer {
     // body of message
     var content = document.createElement("p");
     content.className = "list-group-item-text";
-    content.innerHTML = myEscape(body).replace(/\n/g, "<br>");
+    content.innerHTML = smilify(myEscape(body).replace(/\n/g, "<br>"));
     // node o message
     var node = document.createElement("li");
     node.className = "list-group-item";

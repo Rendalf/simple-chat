@@ -170,7 +170,7 @@ var App = function (_Observer) {
 
 module.exports = App;
 
-},{"./client.js":3,"./components/auth-form.js":4,"./components/disconnected.js":5,"./components/message-form.js":6,"./components/messages-list.js":7,"./components/users-list.js":8,"./observer.js":11}],3:[function(require,module,exports){
+},{"./client.js":3,"./components/auth-form.js":4,"./components/disconnected.js":5,"./components/message-form.js":6,"./components/messages-list.js":7,"./components/users-list.js":9,"./observer.js":12}],3:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -303,7 +303,7 @@ var Client = function (_Observer) {
 
 module.exports = Client;
 
-},{"./observer.js":11}],4:[function(require,module,exports){
+},{"./observer.js":12}],4:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -418,7 +418,7 @@ var AuthForm = function (_Observer) {
 
 module.exports = AuthForm;
 
-},{"../observer.js":11}],5:[function(require,module,exports){
+},{"../observer.js":12}],5:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -546,7 +546,7 @@ var MessageForm = function (_Observer) {
 
 module.exports = MessageForm;
 
-},{"../observer.js":11}],7:[function(require,module,exports){
+},{"../observer.js":12}],7:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -561,6 +561,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var Observer = require("../observer.js");
 var myEscape = require("../escape.js");
+var smilify = require("./smilify.js");
 
 // list of messages
 var MessagesList = function (_Observer) {
@@ -697,7 +698,7 @@ var MessagesList = function (_Observer) {
       // body of message
       var content = document.createElement("p");
       content.className = "list-group-item-text";
-      content.innerHTML = myEscape(body).replace(/\n/g, "<br>");
+      content.innerHTML = smilify(myEscape(body).replace(/\n/g, "<br>"));
       // node o message
       var node = document.createElement("li");
       node.className = "list-group-item";
@@ -717,7 +718,42 @@ var MessagesList = function (_Observer) {
 
 module.exports = MessagesList;
 
-},{"../escape.js":9,"../observer.js":11}],8:[function(require,module,exports){
+},{"../escape.js":10,"../observer.js":12,"./smilify.js":8}],8:[function(require,module,exports){
+"use strict";
+
+// function for detect and insert smiles
+
+// to replace
+var smilesMap = {
+  ":)": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileysmile.png",
+  ":-)": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileysmile.png",
+  "=)": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileysmile.png",
+  ":(": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileyfrown.png",
+  ":-(": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileyfrown.png",
+  "=(": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileyfrown.png",
+  ";)": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileywink.png",
+  "=P": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileytounge.png",
+  ":P": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileytounge.png",
+  ":-P": "http://s1.iconbird.com/ico/0512/circularicons/w16h161337840549smileytounge.png"
+};
+
+// generate function
+var smilify = function (smilesMap) {
+  var replacer = function replacer(smile) {
+    return "<img src=\"" + smilesMap[smile] + "\" alt=\"smile\" />";
+  };
+  var smiles = Object.keys(smilesMap);
+  return function (text) {
+    for (var i = smiles.length; i--;) {
+      text = text.replace(smiles[i], replacer);
+    }
+    return text;
+  };
+}(smilesMap);
+
+module.exports = smilify;
+
+},{}],9:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -828,7 +864,7 @@ var UsersList = function () {
 
 module.exports = UsersList;
 
-},{"../escape.js":9}],9:[function(require,module,exports){
+},{"../escape.js":10}],10:[function(require,module,exports){
 "use strict";
 
 // function that make string escaped and prevent XSS
@@ -853,7 +889,7 @@ var escape = function (toReplace) {
 
 module.exports = escape;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 // run app
@@ -867,7 +903,7 @@ var app = new App({
   node: document.getElementById("app")
 });
 
-},{"../config.json":1,"./app.js":2}],11:[function(require,module,exports){
+},{"../config.json":1,"./app.js":2}],12:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -916,4 +952,4 @@ var Observer = function () {
 
 module.exports = Observer;
 
-},{}]},{},[10]);
+},{}]},{},[11]);
