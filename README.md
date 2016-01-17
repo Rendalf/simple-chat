@@ -87,3 +87,7 @@ All messages will be escaped for prevent XSS.
 * Who typing? Up messages list insert region with info who is typing right now.
 
 * Rooms. For each room use separate tab (e.g. bootstrap-tabs)
+
+* Messages to one user (private and not private)
+
+* Choose timezone into `config.json`
