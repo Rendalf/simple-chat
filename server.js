@@ -2,9 +2,10 @@ const http = require("http");
 const nodeStatic = require("node-static");
 const staticServer = new nodeStatic.Server("./public/");
 const ChatServer = require("./chat-server.js");
+const config = require("./config.json");
 
-const staticPort = 10030;
-const wsPort = 9000;
+const staticPort = config["static-server"].port;
+const wsPort = config["chat-server"].port;
 
 // create static server
 http.createServer((request, response) => {
@@ -15,10 +16,8 @@ http.createServer((request, response) => {
   staticServer.serve(request, response);
 }).listen(staticPort);
 
-console.log("static server is running on http://localhost:" + staticPort);
+console.log(`static server is running on http://localhost:${staticPort}`);
 
-new ChatServer({
-  port: wsPort
-});
+new ChatServer(config);
 
-console.log("chat server is running on ws://localhost:" + wsPort);
+console.log(`chat server is running on ws://${config["chat-server"].origin}:${wsPort}`);

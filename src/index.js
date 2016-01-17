@@ -1,8 +1,7 @@
-const socketUrl = "ws://localhost:9000";
-
+const config = require("../config.json");
 const App = require("./app.js");
 
 var app = new App({
-  socketUrl: socketUrl,
+  socketUrl: `ws://${config["chat-server"].origin}:${config["chat-server"].port}`,
   node: document.getElementById("app")
 });

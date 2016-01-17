@@ -1,0 +1,11 @@
+{
+  "name": "Server",
+  "historyChunkSize": 10,
+  "chat-server" : {
+    "origin": "localhost",
+    "port": 9000
+  },
+  "static-server": {
+    "port": 10030
+  }
+}

@@ -49,17 +49,17 @@ const History = class {
 
 // server of chat
 const ChatServer = class {
-  constructor(serverData) {
+  constructor(config) {
     // name of server that will be used in chat
-    this.name = "Server";
+    this.name = config.name;
     // size of chunk history
-    this._historyChunkSize = 10;
+    this._historyChunkSize = config.historyChunkSize;
     // connections (authorized users)
     this.connections = [];
     // create history storage
     this.history = new History();
     // create server
-    this.server = new WebSocketServer(serverData);
+    this.server = new WebSocketServer(config["chat-server"]);
     // add handler of new connection
     this.server.on("connection", this._onConnect.bind(this));
   }
