@@ -48,3 +48,42 @@ In file `config.json` you can change next fields:
 
 
 If you change `config.json` then you need rebuild appliation and restart server
+
+
+
+## Features
+
+### Smiles
+
+There is availaible four smiles:
+
+* :)
+
+* :(
+
+* ;)
+
+* :P
+
+More info you can find in `src/components/smilify.js`
+
+
+### Dynamic loading history
+
+By default after login to the chat user receive chunk of history.
+But user can load more history by chunks of fixed size.
+Size of that chunk you can set into `config.json`.
+
+
+### Messages sending
+
+You can push `ctrl + enter` to send message instead of click to button `send`.
+Messages can be multilined.
+All messages will be escaped for prevent XSS.
+
+
+## TODO
+
+* Who typing? Up messages list insert region with info who is typing right now.
+
+* Rooms. For each room use separate tab (e.g. bootstrap-tabs)
