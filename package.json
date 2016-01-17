@@ -4,7 +4,7 @@
   "description": "My simple chat on websockets",
   "main": "server.js",
   "scripts": {
-    "build": "gulp build",
+    "build": "./node_modules/.bin/gulp build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ar.lipatov93@yandex.ru",
