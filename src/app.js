@@ -6,6 +6,7 @@ const AuthForm = require("./components/auth-form.js");
 const MessageForm = require("./components/message-form.js");
 const MessagesList = require("./components/messages-list.js");
 const UsersList = require("./components/users-list.js");
+const Disconnected = require("./components/disconnected.js");
 
 // application class
 const App = class extends Observer {
@@ -17,6 +18,8 @@ const App = class extends Observer {
 
     // client
     this.client = new Client(settings.socketUrl);
+    this.client.on("closed", () => this.setDisconnectedState());
+
     // node that will be used to mount root node
     this.node = settings.node;
     // set components of app
@@ -25,6 +28,7 @@ const App = class extends Observer {
       messageForm: new MessageForm(),
       messagesList: new MessagesList(),
       usersList: new UsersList(),
+      disconnected: new Disconnected(),
     };
 
     this.setInitialState();
@@ -32,6 +36,7 @@ const App = class extends Observer {
 
   // set initial state of application
   setInitialState() {
+    this.state = "login";
     // mount auth form node
     this.node.innerHTML = "";
     this.node.appendChild(this.components.authForm.node);
@@ -63,15 +68,38 @@ const App = class extends Observer {
 
   // set state after login
   setAuthorizedState() {
+    this.state = "authorized";
     // main region of chat applicaton
-    let main = document.createElement("section");
+    var main = document.createElement("section");
     main.className = "col-xs-12 col-sm-9";
     main.appendChild(this.components.messageForm.node);
     main.appendChild(this.components.messagesList.node);
 
     // aside region of chat applicaton
-    let aside = document.createElement("aside");
+    var aside = document.createElement("aside");
     aside.className = "col-xs-12 col-sm-3";
+    aside.appendChild(this.components.usersList.node);
+
+    // mount regions
+    this.node.innerHTML = "";
+    this.node.appendChild(main);
+    this.node.appendChild(aside);
+  }
+
+  // when disconnected
+  setDisconnectedState() {
+    this.state = "disconnected";
+
+    // main region of chat applicaton
+    var main = document.createElement("section");
+    main.className = "col-xs-12 col-sm-9";
+    main.appendChild(this.components.disconnected.node);
+    main.appendChild(this.components.messagesList.node);
+
+    // aside region of chat applicaton
+    var aside = document.createElement("aside");
+    aside.className = "col-xs-12 col-sm-3";
+    this.components.usersList.set([]);
     aside.appendChild(this.components.usersList.node);
 
     // mount regions

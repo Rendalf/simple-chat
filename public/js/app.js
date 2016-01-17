@@ -29,6 +29,7 @@ var AuthForm = require("./components/auth-form.js");
 var MessageForm = require("./components/message-form.js");
 var MessagesList = require("./components/messages-list.js");
 var UsersList = require("./components/users-list.js");
+var Disconnected = require("./components/disconnected.js");
 
 // application class
 var App = function (_Observer) {
@@ -46,6 +47,10 @@ var App = function (_Observer) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
 
     _this.client = new Client(settings.socketUrl);
+    _this.client.on("closed", function () {
+      return _this.setDisconnectedState();
+    });
+
     // node that will be used to mount root node
     _this.node = settings.node;
     // set components of app
@@ -53,7 +58,8 @@ var App = function (_Observer) {
       authForm: new AuthForm(),
       messageForm: new MessageForm(),
       messagesList: new MessagesList(),
-      usersList: new UsersList()
+      usersList: new UsersList(),
+      disconnected: new Disconnected()
     };
 
     _this.setInitialState();
@@ -67,6 +73,7 @@ var App = function (_Observer) {
     value: function setInitialState() {
       var _this2 = this;
 
+      this.state = "login";
       // mount auth form node
       this.node.innerHTML = "";
       this.node.appendChild(this.components.authForm.node);
@@ -114,6 +121,7 @@ var App = function (_Observer) {
   }, {
     key: "setAuthorizedState",
     value: function setAuthorizedState() {
+      this.state = "authorized";
       // main region of chat applicaton
       var main = document.createElement("section");
       main.className = "col-xs-12 col-sm-9";
@@ -130,6 +138,31 @@ var App = function (_Observer) {
       this.node.appendChild(main);
       this.node.appendChild(aside);
     }
+
+    // when disconnected
+
+  }, {
+    key: "setDisconnectedState",
+    value: function setDisconnectedState() {
+      this.state = "disconnected";
+
+      // main region of chat applicaton
+      var main = document.createElement("section");
+      main.className = "col-xs-12 col-sm-9";
+      main.appendChild(this.components.disconnected.node);
+      main.appendChild(this.components.messagesList.node);
+
+      // aside region of chat applicaton
+      var aside = document.createElement("aside");
+      aside.className = "col-xs-12 col-sm-3";
+      this.components.usersList.set([]);
+      aside.appendChild(this.components.usersList.node);
+
+      // mount regions
+      this.node.innerHTML = "";
+      this.node.appendChild(main);
+      this.node.appendChild(aside);
+    }
   }]);
 
   return App;
@@ -137,7 +170,7 @@ var App = function (_Observer) {
 
 module.exports = App;
 
-},{"./client.js":3,"./components/auth-form.js":4,"./components/message-form.js":5,"./components/messages-list.js":6,"./components/users-list.js":7,"./observer.js":10}],3:[function(require,module,exports){
+},{"./client.js":3,"./components/auth-form.js":4,"./components/disconnected.js":5,"./components/message-form.js":6,"./components/messages-list.js":7,"./components/users-list.js":8,"./observer.js":11}],3:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -270,7 +303,7 @@ var Client = function (_Observer) {
 
 module.exports = Client;
 
-},{"./observer.js":10}],4:[function(require,module,exports){
+},{"./observer.js":11}],4:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -385,7 +418,39 @@ var AuthForm = function (_Observer) {
 
 module.exports = AuthForm;
 
-},{"../observer.js":10}],5:[function(require,module,exports){
+},{"../observer.js":11}],5:[function(require,module,exports){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// disconnected message component
+
+var Disconnected = function () {
+  function Disconnected() {
+    _classCallCheck(this, Disconnected);
+
+    this.element = document.createElement("section");
+    this.element.className = "jumbotron text-center";
+    this.element.innerHTML = "<big>Disconnected<br>Reload page or try later</big>";
+  }
+
+  // get toou node
+
+  _createClass(Disconnected, [{
+    key: "node",
+    get: function get() {
+      return this.element;
+    }
+  }]);
+
+  return Disconnected;
+}();
+
+module.exports = Disconnected;
+
+},{}],6:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -481,7 +546,7 @@ var MessageForm = function (_Observer) {
 
 module.exports = MessageForm;
 
-},{"../observer.js":10}],6:[function(require,module,exports){
+},{"../observer.js":11}],7:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -652,7 +717,7 @@ var MessagesList = function (_Observer) {
 
 module.exports = MessagesList;
 
-},{"../escape.js":8,"../observer.js":10}],7:[function(require,module,exports){
+},{"../escape.js":9,"../observer.js":11}],8:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -763,7 +828,7 @@ var UsersList = function () {
 
 module.exports = UsersList;
 
-},{"../escape.js":8}],8:[function(require,module,exports){
+},{"../escape.js":9}],9:[function(require,module,exports){
 "use strict";
 
 // function that make string escaped and prevent XSS
@@ -788,7 +853,7 @@ var escape = function (toReplace) {
 
 module.exports = escape;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 // run app
@@ -802,7 +867,7 @@ var app = new App({
   node: document.getElementById("app")
 });
 
-},{"../config.json":1,"./app.js":2}],10:[function(require,module,exports){
+},{"../config.json":1,"./app.js":2}],11:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -851,4 +916,4 @@ var Observer = function () {
 
 module.exports = Observer;
 
-},{}]},{},[9]);
+},{}]},{},[10]);
